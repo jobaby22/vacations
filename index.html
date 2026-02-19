@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Caribbean Adventure 2026</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <!-- Custom Styling for Chart Containers and Specifics -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* Slate 50 */
+        }
+        
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+
+        /* Hide scrollbar for horizontal scroll containers */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Custom Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+    </style>
+
+    <!-- Chosen Palette: Tropical Modern 
+         - Primary: Jungle Green (#065f46 - emerald-800)
+         - Secondary: Ocean Blue (#0ea5e9 - sky-500)
+         - Accent: Sunset Orange (#f97316 - orange-500)
+         - Neutral: Sand (#fffbeb - amber-50)
+    -->
+
+    <!-- Application Structure Plan:
+         1. Hero: Title, Dates, Countdown (Immediate context).
+         2. Navigation: Sticky tabs to jump between major modules (Dominica, St. Lucia, Logistics).
+         3. Overview Timeline: A high-level visual flow of the trip legs.
+         4. Dominica Section: Deep dive into Jungle Bay, costs (Chart.js), and the Boiling Lake hike details.
+         5. The Crossing: Specific logistics for the Ferry and Driver.
+         6. St. Lucia Section: Airbnb details, Family logistics, and Boat tour info.
+         7. Logistics Hub: Flights, Contacts, and Interactive Packing List.
+         Why this structure? It follows the chronological flow of the user's journey while keeping critical reference info (contacts/flights) accessible. 
+    -->
+
+    <!-- Visualization & Content Choices:
+         1. Countdown Timer (JS): Builds excitement and urgency.
+         2. Cost Breakdown (Chart.js Donut): Visualizes the specific payment structure for Jungle Bay (Deposit vs Due) to prevent check-in surprises.
+         3. Activity Intensity (Chart.js Bar): Visualizes physical effort per day (Hike vs Spa) to help manage energy levels.
+         4. Interactive Checklists (JS): For packing, allowing users to check off items as they prepare.
+         5. Flight Cards (HTML/JS): Expandable details for flight numbers and times.
+         CONFIRMATION: NO SVG graphics used. NO Mermaid JS used.
+    -->
+</head>
+<body class="text-slate-800">
+
+    <!-- Navigation -->
+    <nav class="sticky top-0 z-50 bg-emerald-900 text-white shadow-lg">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="flex justify-between items-center h-16">
+                <span class="font-bold text-lg tracking-wider">🏝️ CARIBBEAN '26</span>
+                <div class="hidden md:flex space-x-6 text-sm font-medium">
+                    <button onclick="scrollToSection('overview')" class="hover:text-sky-300 transition">Overview</button>
+                    <button onclick="scrollToSection('dominica')" class="hover:text-sky-300 transition">Dominica</button>
+                    <button onclick="scrollToSection('st-lucia')" class="hover:text-sky-300 transition">St. Lucia</button>
+                    <button onclick="scrollToSection('logistics')" class="hover:text-sky-300 transition">Logistics</button>
+                </div>
+                <!-- Mobile Menu Button (Simplified for SPA) -->
+                <button class="md:hidden text-white focus:outline-none" onclick="document.getElementById('mobile-menu').classList.toggle('hidden')">☰</button>
+            </div>
+            <!-- Mobile Menu -->
+            <div id="mobile-menu" class="hidden md:hidden pb-4 bg-emerald-800">
+                <button onclick="scrollToSection('overview')" class="block py-2 px-4 hover:bg-emerald-700 w-full text-left">Overview</button>
+                <button onclick="scrollToSection('dominica')" class="block py-2 px-4 hover:bg-emerald-700 w-full text-left">Dominica</button>
+                <button onclick="scrollToSection('st-lucia')" class="block py-2 px-4 hover:bg-emerald-700 w-full text-left">St. Lucia</button>
+                <button onclick="scrollToSection('logistics')" class="block py-2 px-4 hover:bg-emerald-700 w-full text-left">Logistics</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header id="overview" class="bg-gradient-to-br from-emerald-800 to-teal-600 text-white py-12 px-4 text-center">
+        <div class="max-w-4xl mx-auto animate-fade-in">
+            <h1 class="text-4xl md:text-6xl font-bold mb-4">Dominica & St. Lucia</h1>
+            <p class="text-xl md:text-2xl text-emerald-100 mb-8">February 21 – March 2, 2026</p>
+            
+            <!-- Countdown Container -->
+            <div class="bg-white/10 backdrop-blur-md rounded-xl p-6 inline-block border border-white/20">
+                <p class="text-sm uppercase tracking-widest mb-2 opacity-80">Adventure Begins In</p>
+                <div class="flex justify-center gap-4 md:gap-8 font-mono text-2xl md:text-4xl font-bold" id="countdown">
+                    <!-- JS will populate -->
+                    <span class="animate-pulse">Loading...</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="max-w-6xl mx-auto px-4 py-8 space-y-12">
+
+        <!-- Timeline Overview -->
+        <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8">
+            <h2 class="text-2xl font-bold text-slate-800 mb-6 flex items-center">
+                <span class="bg-sky-100 text-sky-600 p-2 rounded-lg mr-3">🗺️</span> Trip Overview
+            </h2>
+            <p class="text-slate-600 mb-8">
+                This adventure combines the rugged nature of Dominica with the iconic luxury of St. Lucia. 
+                Below is the high-level flow of your 9-day journey across two islands.
+            </p>
+            
+            <div class="relative">
+                <!-- Vertical Line -->
+                <div class="absolute left-4 top-0 bottom-0 w-0.5 bg-slate-200"></div>
+
+                <!-- Timeline Items -->
+                <div class="space-y-8 relative">
+                    <!-- Item 1 -->
+                    <div class="flex items-start ml-4 group cursor-pointer hover:bg-slate-50 p-2 rounded-lg transition" onclick="scrollToSection('logistics')">
+                        <div class="absolute -left-2 bg-sky-500 w-4 h-4 rounded-full border-4 border-white"></div>
+                        <div class="pl-6">
+                            <span class="text-xs font-bold text-sky-600 uppercase">Feb 21 • Departure</span>
+                            <h3 class="text-lg font-bold text-slate-800">Tampa to Dominica</h3>
+                            <p class="text-sm text-slate-500">Flight AA 3192 & AA 3448 via Miami.</p>
+                        </div>
+                    </div>
+                    <!-- Item 2 -->
+                    <div class="flex items-start ml-4 group cursor-pointer hover:bg-slate-50 p-2 rounded-lg transition" onclick="scrollToSection('dominica')">
+                        <div class="absolute -left-2 bg-emerald-600 w-4 h-4 rounded-full border-4 border-white"></div>
+                        <div class="pl-6">
+                            <span class="text-xs font-bold text-emerald-600 uppercase">Feb 21 - 26 • Dominica</span>
+                            <h3 class="text-lg font-bold text-slate-800">Jungle Bay Adventure</h3>
+                            <p class="text-sm text-slate-500">Boiling Lake hike, Scuba diving, & Wellness.</p>
+                        </div>
+                    </div>
+                    <!-- Item 3 -->
+                    <div class="flex items-start ml-4 group cursor-pointer hover:bg-slate-50 p-2 rounded-lg transition" onclick="scrollToSection('crossing')">
+                        <div class="absolute -left-2 bg-orange-500 w-4 h-4 rounded-full border-4 border-white"></div>
+                        <div class="pl-6">
+                            <span class="text-xs font-bold text-orange-600 uppercase">Feb 26 • The Crossing</span>
+                            <h3 class="text-lg font-bold text-slate-800">Ferry to St. Lucia</h3>
+                            <p class="text-sm text-slate-500">L'Express Des Iles followed by private driver transfer.</p>
+                        </div>
+                    </div>
+                    <!-- Item 4 -->
+                    <div class="flex items-start ml-4 group cursor-pointer hover:bg-slate-50 p-2 rounded-lg transition" onclick="scrollToSection('st-lucia')">
+                        <div class="absolute -left-2 bg-indigo-600 w-4 h-4 rounded-full border-4 border-white"></div>
+                        <div class="pl-6">
+                            <span class="text-xs font-bold text-indigo-600 uppercase">Feb 26 - Mar 2 • St. Lucia</span>
+                            <h3 class="text-lg font-bold text-slate-800">Piton Villas Family Time</h3>
+                            <p class="text-sm text-slate-500">Reunion with parents, Boat tour, & Relaxation.</p>
+                        </div>
+                    </div>
+                     <!-- Item 5 -->
+                     <div class="flex items-start ml-4 group cursor-pointer hover:bg-slate-50 p-2 rounded-lg transition" onclick="scrollToSection('logistics')">
+                        <div class="absolute -left-2 bg-slate-500 w-4 h-4 rounded-full border-4 border-white"></div>
+                        <div class="pl-6">
+                            <span class="text-xs font-bold text-slate-600 uppercase">Mar 2 • Return</span>
+                            <h3 class="text-lg font-bold text-slate-800">Fly Home</h3>
+                            <p class="text-sm text-slate-500">UVF to TPA via MIA.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Dominica Section -->
+        <section id="dominica" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-3">
+                <div class="bg-emerald-50 border-l-4 border-emerald-600 p-4 rounded-r-lg">
+                    <h2 class="text-2xl font-bold text-emerald-900">🇩🇲 Dominica: The Nature Island</h2>
+                    <p class="text-emerald-800 mt-2">
+                        Your base for high adventure. You, Chris, Jason, and Benjamin will be staying at the eco-luxury Jungle Bay. 
+                        This leg is defined by the rigorous Boiling Lake hike and world-class scuba diving.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Left Column: Stay Info & Finance -->
+            <div class="space-y-6">
+                <!-- Hotel Card -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                    <h3 class="font-bold text-lg mb-4 text-emerald-800">🏨 Jungle Bay Dominica</h3>
+                    <div class="space-y-3 text-sm">
+                        <p><span class="font-semibold">Check-in:</span> Feb 21, 2026</p>
+                        <p><span class="font-semibold">Check-out:</span> Feb 26, 2026</p>
+                        <p><span class="font-semibold">Rooms:</span> 2x Garden View Villas</p>
+                        <div class="bg-slate-50 p-3 rounded border border-slate-100">
+                            <p class="font-bold text-slate-700">Primary Contact:</p>
+                            <p>Chidimma Francis</p>
+                            <a href="https://wa.me/17672350025" class="text-emerald-600 hover:underline flex items-center gap-1 mt-1">
+                                📱 +1 (767) 235-0025
+                            </a>
+                            <a href="mailto:info@junglebaydominica.com" class="text-emerald-600 hover:underline flex items-center gap-1">
+                                📧 Email Reservations
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Finance Chart -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                    <h3 class="font-bold text-lg mb-2 text-slate-800">💰 Cost Breakdown (Per Room)</h3>
+                    <p class="text-xs text-slate-500 mb-4">Deposit paid Dec 3, 2025. Balance due at arrival.</p>
+                    <div class="chart-container h-64">
+                        <canvas id="jungleBayCostChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Activity Itinerary -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Activity Intensity Chart -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-bold text-lg text-slate-800">⚡ Daily Activity Intensity</h3>
+                        <span class="text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded">Plan your energy</span>
+                    </div>
+                    <div class="chart-container h-64">
+                        <canvas id="dominicaActivityChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Daily Agenda -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="bg-slate-50 px-6 py-4 border-b border-slate-200">
+                        <h3 class="font-bold text-slate-800">Daily Agenda</h3>
+                    </div>
+                    <div class="divide-y divide-slate-100">
+                        <!-- Day 1 -->
+                        <div class="p-4 hover:bg-slate-50 transition">
+                            <div class="flex items-center gap-3 mb-2">
+                                <span class="bg-slate-200 text-slate-700 text-xs font-bold px-2 py-1 rounded">Feb 21</span>
+                                <h4 class="font-bold text-emerald-700">Arrival</h4>
+                            </div>
+                            <p class="text-sm text-slate-600">Land at 2:40 PM. Transfer to Jungle Bay. Welcome dinner and settle into villas.</p>
+                        </div>
+                        <!-- Day 2 -->
+                        <div class="p-4 hover:bg-slate-50 transition border-l-4 border-sky-400">
+                            <div class="flex items-center gap-3 mb-2">
+                                <span class="bg-sky-100 text-sky-700 text-xs font-bold px-2 py-1 rounded">Feb 22 (Sun)</span>
+                                <h4 class="font-bold text-sky-700">Scuba Diving</h4>
+                            </div>
+                            <p class="text-sm text-slate-600 mb-2">Diving with <strong>Captain Donny</strong> at Champagne Beach.</p>
+                            <div class="bg-sky-50 p-2 rounded text-xs text-sky-800 inline-block">
+                                📞 Contact Donny: +1 (767) 616-0023
+                            </div>
+                        </div>
+                        <!-- Day 3 -->
+                        <div class="p-4 hover:bg-slate-50 transition border-l-4 border-orange-500">
+                            <div class="flex items-center gap-3 mb-2">
+                                <span class="bg-orange-100 text-orange-700 text-xs font-bold px-2 py-1 rounded">Feb 23 (Mon)</span>
+                                <h4 class="font-bold text-orange-700">The Boiling Lake Hike</h4>
+                            </div>
+                            <p class="text-sm text-slate-600 mb-2"><strong>7:30 AM - 5:00 PM.</strong> Strenuous 6-hour trek. Packed lunch included.</p>
+                            <div class="flex flex-wrap gap-2">
+                                <span class="text-xs border border-orange-200 bg-orange-50 px-2 py-1 rounded">🥾 Hiking Boots Required</span>
+                                <span class="text-xs border border-orange-200 bg-orange-50 px-2 py-1 rounded">💧 3L Water</span>
+                                <span class="text-xs border border-orange-200 bg-orange-50 px-2 py-1 rounded">🧥 Rain Jacket</span>
+                            </div>
+                        </div>
+                        <!-- Day 4-5 -->
+                        <div class="p-4 hover:bg-slate-50 transition">
+                            <div class="flex items-center gap-3 mb-2">
+                                <span class="bg-slate-200 text-slate-700 text-xs font-bold px-2 py-1 rounded">Feb 24-25</span>
+                                <h4 class="font-bold text-emerald-700">Wellness & Snorkeling</h4>
+                            </div>
+                            <p class="text-sm text-slate-600">Open days. Options: Champagne Reef snorkeling, Jungle Bay Spa treatments, or Sunset Yoga.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- The Crossing Section -->
+        <section id="crossing" class="bg-indigo-50 rounded-2xl border border-indigo-100 p-6 md:p-8">
+            <h2 class="text-2xl font-bold text-indigo-900 mb-6">🚢 The Crossing: Feb 26</h2>
+            <p class="text-indigo-800 mb-6">
+                Transition day from Dominica to St. Lucia. This involves a ferry ride and a coordinated late-night driver pickup.
+            </p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 text-center">
+                <!-- Step 1 -->
+                <div class="bg-white p-4 rounded-lg shadow-sm">
+                    <div class="text-2xl mb-2">🕑</div>
+                    <div class="font-bold text-indigo-900">2:45 PM</div>
+                    <div class="text-xs text-indigo-600">Check-in Deadline</div>
+                    <div class="text-xs text-slate-500 mt-1">Roseau Ferry Terminal</div>
+                </div>
+                <!-- Step 2 -->
+                <div class="bg-white p-4 rounded-lg shadow-sm border-t-4 border-indigo-500">
+                    <div class="text-2xl mb-2">🚢</div>
+                    <div class="font-bold text-indigo-900">4:45 PM</div>
+                    <div class="text-xs text-indigo-600">Ferry Departs</div>
+                    <div class="text-xs text-slate-500 mt-1">L'Express Des Iles</div>
+                </div>
+                <!-- Step 3 -->
+                <div class="bg-white p-4 rounded-lg shadow-sm">
+                    <div class="text-2xl mb-2">📍</div>
+                    <div class="font-bold text-indigo-900">9:15 PM</div>
+                    <div class="text-xs text-indigo-600">Arrive St. Lucia</div>
+                    <div class="text-xs text-slate-500 mt-1">Castries Terminal</div>
+                </div>
+                <!-- Step 4 -->
+                <div class="bg-white p-4 rounded-lg shadow-sm border-t-4 border-emerald-500">
+                    <div class="text-2xl mb-2">🚕</div>
+                    <div class="font-bold text-indigo-900">Pickup</div>
+                    <div class="text-xs text-indigo-600">Private Driver</div>
+                    <div class="text-xs text-slate-500 mt-1">~50 min drive to Jalousie</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- St. Lucia Section -->
+        <section id="st-lucia" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-3">
+                <div class="bg-sky-50 border-l-4 border-sky-600 p-4 rounded-r-lg">
+                    <h2 class="text-2xl font-bold text-sky-900">🇱🇨 St. Lucia: The Pitons</h2>
+                    <p class="text-sky-800 mt-2">
+                        The family reunion leg. Jordan, Chris, and Parents unite at the Piton Villas in Jalousie. 
+                        Focus on relaxation, boating, and iconic views.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Left Column: Airbnb & Contact -->
+            <div class="space-y-6">
+                <!-- Airbnb Card -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                    <h3 class="font-bold text-lg mb-4 text-sky-800">🏠 Piton Villas, Hermitage Terrace</h3>
+                    <div class="space-y-3 text-sm">
+                        <p><span class="font-semibold">Check-in:</span> Feb 26 @ 3:00 PM</p>
+                        <p><span class="font-semibold">Check-out:</span> Mar 2 @ 11:00 AM</p>
+                        <p><span class="font-semibold">Location:</span> Jalousie, Soufriere</p>
+                        <p class="text-xs text-slate-500 italic">Direct views of Petit Piton.</p>
+                        
+                        <div class="bg-sky-50 p-4 rounded border border-sky-100 mt-4">
+                            <p class="font-bold text-sky-800 mb-2">🔑 Key Contact: Denise</p>
+                            <p class="text-xs text-sky-700 mb-2">Concierge & Property Manager</p>
+                            <a href="tel:+17584866440" class="block w-full text-center bg-sky-600 hover:bg-sky-700 text-white font-bold py-2 rounded transition">
+                                Call Denise: +1 (758) 486-6440
+                            </a>
+                            <p class="text-xs text-center text-slate-500 mt-2">Contact via WhatsApp recommended</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Itinerary -->
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="bg-slate-50 px-6 py-4 border-b border-slate-200">
+                        <h3 class="font-bold text-slate-800">Family Agenda</h3>
+                    </div>
+                    <div class="divide-y divide-slate-100">
+                        <!-- Fri -->
+                        <div class="p-4 hover:bg-slate-50 transition border-l-4 border-sky-400">
+                            <div class="flex items-center gap-3 mb-2">
+                                <span class="bg-sky-100 text-sky-700 text-xs font-bold px-2 py-1 rounded">Feb 27 (Fri)</span>
+                                <h4 class="font-bold text-sky-700">Private Morning Boat Tour</h4>
+                            </div>
+                            <p class="text-sm text-slate-600">Snorkeling at the base of the Pitons and Anse Chastanet reef. A relaxed morning on the water.</p>
+                        </div>
+                        <!-- Sat-Sun -->
+                        <div class="p-4 hover:bg-slate-50 transition">
+                            <div class="flex items-center gap-3 mb-2">
+                                <span class="bg-slate-200 text-slate-700 text-xs font-bold px-2 py-1 rounded">Feb 28 - Mar 1</span>
+                                <h4 class="font-bold text-slate-700">Family Time</h4>
+                            </div>
+                            <p class="text-sm text-slate-600 mb-2">Relax by the private pool. Optional excursion to <strong>Sulphur Springs</strong> for a mud bath.</p>
+                        </div>
+                        <!-- Mon -->
+                        <div class="p-4 hover:bg-slate-50 transition border-l-4 border-slate-400">
+                            <div class="flex items-center gap-3 mb-2">
+                                <span class="bg-slate-200 text-slate-700 text-xs font-bold px-2 py-1 rounded">Mar 2 (Mon)</span>
+                                <h4 class="font-bold text-slate-700">Departure</h4>
+                            </div>
+                            <p class="text-sm text-slate-600">Checkout at 11:00 AM. Shared transfer to UVF for flight home.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Logistics Hub -->
+        <section id="logistics" class="bg-slate-800 text-white rounded-2xl p-6 md:p-8">
+            <h2 class="text-2xl font-bold mb-6">🎒 Logistics Hub</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                
+                <!-- Flights Module -->
+                <div class="bg-slate-700 rounded-xl p-6">
+                    <h3 class="font-bold text-emerald-400 mb-4">✈️ American Airlines</h3>
+                    <div class="space-y-4 text-sm">
+                        <div class="border-b border-slate-600 pb-2">
+                            <p class="text-slate-400 text-xs uppercase">Feb 21 • Outbound</p>
+                            <div class="flex justify-between font-mono mt-1">
+                                <span>TPA ➝ MIA</span>
+                                <span>AA 3192</span>
+                            </div>
+                            <div class="flex justify-between font-mono text-slate-300">
+                                <span>MIA ➝ DOM</span>
+                                <span>AA 3448</span>
+                            </div>
+                        </div>
+                        <div>
+                            <p class="text-slate-400 text-xs uppercase">Mar 2 • Inbound</p>
+                            <div class="flex justify-between font-mono mt-1">
+                                <span>UVF ➝ MIA</span>
+                                <span>AA 2742</span>
+                            </div>
+                            <div class="flex justify-between font-mono text-slate-300">
+                                <span>MIA ➝ TPA</span>
+                                <span>AA 1921</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Essentials Module -->
+                <div class="bg-slate-700 rounded-xl p-6">
+                    <h3 class="font-bold text-orange-400 mb-4">🔌 Essentials</h3>
+                    <ul class="space-y-3 text-sm">
+                        <li class="flex items-center gap-3">
+                            <span class="bg-slate-600 p-2 rounded">🔌</span>
+                            <div>
+                                <p class="font-bold">Type G Plugs</p>
+                                <p class="text-slate-400 text-xs">British 3-prong. Adapter required.</p>
+                            </div>
+                        </li>
+                        <li class="flex items-center gap-3">
+                            <span class="bg-slate-600 p-2 rounded">💵</span>
+                            <div>
+                                <p class="font-bold">Currency</p>
+                                <p class="text-slate-400 text-xs">USD Accepted. Change in XCD.</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Interactive Packing List -->
+                <div class="bg-slate-700 rounded-xl p-6">
+                    <h3 class="font-bold text-sky-400 mb-4">✅ Packing Checklist</h3>
+                    <div class="space-y-2" id="packing-list">
+                        <!-- JS Generated Items -->
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-slate-900 text-slate-400 py-8 text-center text-sm">
+        <p>Generated for Jordan & Chris • Caribbean Adventure 2026</p>
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // --- 1. State & Data ---
+        const tripDate = new Date("2026-02-21T08:00:00").getTime();
+        
+        const jungleBayCosts = {
+            paid: 544.50,
+            due: 1270.50,
+            currency: "USD"
+        };
+
+        const packingItems = [
+            { id: 1, text: "Type G Power Adapters", checked: false },
+            { id: 2, text: "Hiking Boots (Boiling Lake)", checked: false },
+            { id: 3, text: "Rain Jacket / Poncho", checked: false },
+            { id: 4, text: "Reef-Safe Sunscreen", checked: false },
+            { id: 5, text: "Passport & Ferry Tickets", checked: false },
+            { id: 6, text: "Small bills (USD) for tips", checked: false }
+        ];
+
+        // --- 2. Charts (Chart.js) ---
+        
+        // Jungle Bay Cost Chart (Donut)
+        function renderCostChart() {
+            const ctx = document.getElementById('jungleBayCostChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Paid Deposit', 'Due at Check-in'],
+                    datasets: [{
+                        data: [jungleBayCosts.paid, jungleBayCosts.due],
+                        backgroundColor: ['#10b981', '#f97316'], // Emerald-500, Orange-500
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { font: { family: 'Inter', size: 12 }, color: '#334155' }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return ` $${context.raw.toFixed(2)} USD`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Daily Intensity Chart (Bar)
+        function renderActivityChart() {
+            const ctx = document.getElementById('dominicaActivityChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Feb 21 (Arr)', 'Feb 22 (Dive)', 'Feb 23 (Hike)', 'Feb 24 (Chill)', 'Feb 25 (Chill)'],
+                    datasets: [{
+                        label: 'Physical Intensity Level',
+                        data: [30, 60, 100, 20, 20], // Arbitrary intensity values
+                        backgroundColor: [
+                            '#cbd5e1', // Slate-300
+                            '#38bdf8', // Sky-400
+                            '#ef4444', // Red-500 (High intensity)
+                            '#a7f3d0', // Emerald-200
+                            '#a7f3d0'  // Emerald-200
+                        ],
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { 
+                            beginAtZero: true, 
+                            max: 100,
+                            display: false // Hide y-axis numbers for cleaner look
+                        },
+                        x: {
+                            grid: { display: false }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const labels = ['Travel Fatigue', 'Active', 'EXTREME', 'Relaxed', 'Relaxed'];
+                                    return ` ${labels[context.dataIndex]}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // --- 3. Interaction Logic ---
+
+        // Countdown Timer
+        function updateCountdown() {
+            const now = new Date().getTime();
+            const distance = tripDate - now;
+
+            if (distance < 0) {
+                document.getElementById("countdown").innerHTML = "TRIP STARTED!";
+                return;
+            }
+
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            
+            document.getElementById("countdown").innerHTML = `
+                <span class="flex flex-col items-center"><span class="text-4xl md:text-6xl">${days}</span><span class="text-xs font-normal opacity-70">DAYS</span></span>
+                <span class="text-2xl md:text-4xl self-start mt-2">:</span>
+                <span class="flex flex-col items-center"><span class="text-4xl md:text-6xl">${hours}</span><span class="text-xs font-normal opacity-70">HOURS</span></span>
+            `;
+        }
+
+        // Smooth Scroll
+        window.scrollToSection = function(id) {
+            const element = document.getElementById(id);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        // Render Packing List
+        function renderPackingList() {
+            const container = document.getElementById('packing-list');
+            container.innerHTML = '';
+            
+            packingItems.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = "flex items-center gap-3 cursor-pointer group";
+                div.onclick = () => toggleCheck(index);
+                
+                div.innerHTML = `
+                    <div class="w-5 h-5 rounded border border-slate-400 flex items-center justify-center transition ${item.checked ? 'bg-emerald-500 border-emerald-500' : 'bg-transparent group-hover:border-white'}">
+                        ${item.checked ? '<span class="text-white text-xs">✓</span>' : ''}
+                    </div>
+                    <span class="${item.checked ? 'line-through text-slate-500' : 'text-slate-300'} transition select-none">${item.text}</span>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function toggleCheck(index) {
+            packingItems[index].checked = !packingItems[index].checked;
+            renderPackingList();
+        }
+
+        // --- 4. Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            renderCostChart();
+            renderActivityChart();
+            renderPackingList();
+            setInterval(updateCountdown, 1000 * 60); // Update every minute
+            updateCountdown(); // Initial call
+        });
+
+    </script>
+</body>
+</html>
