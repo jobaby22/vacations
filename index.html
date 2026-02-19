@@ -39,7 +39,6 @@
         }
         .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
 
-        /* AI Chat Bubble Styles */
         #ai-chat-window {
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
@@ -52,6 +51,12 @@
             0% { background-position: 200% 0; }
             100% { background-position: -200% 0; }
         }
+
+        /* Modal Overlay */
+        .modal-overlay {
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+        }
     </style>
 </head>
 <body class="text-slate-800 pb-20">
@@ -61,13 +66,17 @@
         <div class="max-w-6xl mx-auto px-4">
             <div class="flex justify-between items-center h-16">
                 <span class="font-bold text-lg tracking-wider">🏝️ CARIBBEAN '26</span>
-                <div class="hidden md:flex space-x-6 text-sm font-medium">
+                <div class="hidden md:flex space-x-6 text-sm font-medium items-center">
                     <button onclick="scrollToSection('overview')" class="hover:text-sky-300 transition">Overview</button>
                     <button onclick="scrollToSection('dominica')" class="hover:text-sky-300 transition">Dominica</button>
                     <button onclick="scrollToSection('st-lucia')" class="hover:text-sky-300 transition">St. Lucia</button>
                     <button onclick="scrollToSection('logistics')" class="hover:text-sky-300 transition">Logistics</button>
+                    <button onclick="toggleSettings()" class="bg-emerald-800 p-2 rounded-full hover:bg-emerald-700 transition" title="AI Settings">⚙️</button>
                 </div>
-                <button class="md:hidden text-white" onclick="document.getElementById('mobile-menu').classList.toggle('hidden')">☰</button>
+                <div class="md:hidden flex items-center gap-4">
+                    <button onclick="toggleSettings()" class="text-xl">⚙️</button>
+                    <button class="text-white text-2xl" onclick="document.getElementById('mobile-menu').classList.toggle('hidden')">☰</button>
+                </div>
             </div>
             <div id="mobile-menu" class="hidden md:hidden pb-4 bg-emerald-800">
                 <button onclick="scrollToSection('overview')" class="block py-2 px-4 hover:bg-emerald-700 w-full text-left">Overview</button>
@@ -77,6 +86,30 @@
             </div>
         </div>
     </nav>
+
+    <!-- AI Settings Modal -->
+    <div id="settings-modal" class="fixed inset-0 z-[100] modal-overlay flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl animate-fade-in">
+            <div class="p-6 border-b border-slate-100 flex justify-between items-center">
+                <h3 class="text-xl font-bold text-slate-800">✨ AI Assistant Settings</h3>
+                <button onclick="toggleSettings()" class="text-2xl text-slate-400 hover:text-slate-600">×</button>
+            </div>
+            <div class="p-6 space-y-4">
+                <p class="text-sm text-slate-600">To use the AI features on your live site, you need to provide your own Gemini API Key. This key is saved <strong>only in your browser</strong>.</p>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Gemini API Key</label>
+                    <input id="api-key-input" type="password" placeholder="Paste your key here..." class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-sm focus:outline-emerald-600">
+                </div>
+                <div class="bg-emerald-50 p-4 rounded-lg border border-emerald-100">
+                    <p class="text-xs text-emerald-800 font-medium">Don't have a key? You can get one for free at <a href="https://aistudio.google.com/" target="_blank" class="underline font-bold">Google AI Studio</a>.</p>
+                </div>
+                <button onclick="saveApiKey()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-emerald-200">
+                    Save Key & Enable AI
+                </button>
+                <button onclick="clearApiKey()" class="w-full text-xs text-red-500 hover:underline">Clear saved key</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Hero Section -->
     <header id="overview" class="bg-gradient-to-br from-emerald-800 to-teal-600 text-white py-12 px-4 text-center relative overflow-hidden">
@@ -296,6 +329,9 @@
         </div>
         <div id="ai-messages" class="flex-1 p-4 overflow-y-auto space-y-4 text-sm max-h-[350px]">
             <div class="bg-slate-100 p-3 rounded-lg text-slate-700">Hi Jordan & Chris! I'm your AI guide for the Caribbean. Ask me anything about your upcoming adventure!</div>
+            <div id="no-key-warning" class="bg-orange-50 p-3 rounded-lg text-orange-800 border border-orange-200 text-xs hidden">
+                ⚠️ <strong>AI is offline:</strong> Please add your API Key in the settings (⚙️) to use the chat assistant.
+            </div>
         </div>
         <div class="p-4 border-t border-slate-100">
             <div class="flex gap-2">
@@ -306,8 +342,44 @@
     </div>
 
     <script>
-        const apiKey = ""; // Provided by env
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        // --- API & State Management ---
+        let currentApiKey = localStorage.getItem('gemini_api_key') || "";
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'caribbean-trip-2026';
+
+        function toggleSettings() {
+            const modal = document.getElementById('settings-modal');
+            modal.classList.toggle('hidden');
+            if (!modal.classList.contains('hidden')) {
+                document.getElementById('api-key-input').value = currentApiKey;
+            }
+        }
+
+        function saveApiKey() {
+            const val = document.getElementById('api-key-input').value.trim();
+            if (val) {
+                currentApiKey = val;
+                localStorage.setItem('gemini_api_key', val);
+                document.getElementById('no-key-warning').classList.add('hidden');
+                toggleSettings();
+                showToast("✅ AI Settings Saved!");
+            }
+        }
+
+        function clearApiKey() {
+            localStorage.removeItem('gemini_api_key');
+            currentApiKey = "";
+            document.getElementById('api-key-input').value = "";
+            document.getElementById('no-key-warning').classList.remove('hidden');
+            showToast("🗑️ API Key Cleared");
+        }
+
+        function showToast(msg) {
+            const t = document.createElement('div');
+            t.className = "fixed top-20 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-6 py-3 rounded-full text-sm font-bold shadow-xl z-[200] animate-fade-in";
+            t.innerText = msg;
+            document.body.appendChild(t);
+            setTimeout(() => t.remove(), 2500);
+        }
 
         // --- Core Data ---
         const tripDetails = {
@@ -329,7 +401,12 @@
 
         // --- AI API Utility ---
         async function callGemini(prompt, systemInstruction = "") {
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            if (!currentApiKey) {
+                document.getElementById('no-key-warning').classList.remove('hidden');
+                return "Please set your API key in settings (⚙️) to use the AI features.";
+            }
+
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${currentApiKey}`;
             const payload = {
                 contents: [{ parts: [{ text: prompt }] }],
                 systemInstruction: { parts: [{ text: systemInstruction }] }
@@ -341,6 +418,9 @@
                     const response = await fetch(url, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'application/json' } });
                     const result = await response.json();
                     if (response.ok) return result.candidates?.[0]?.content?.parts?.[0]?.text;
+                    if (result.error?.message?.includes('API key not valid')) {
+                        return "❌ Invalid API Key. Please check your settings.";
+                    }
                 } catch (e) {}
                 await new Promise(r => setTimeout(r, delay));
                 delay *= 2;
@@ -349,7 +429,8 @@
         }
 
         async function callImagen(prompt) {
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${apiKey}`;
+            if (!currentApiKey) return null;
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${currentApiKey}`;
             const payload = { instances: { prompt: prompt }, parameters: { sampleCount: 1 } };
             try {
                 const response = await fetch(url, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'application/json' } });
@@ -362,11 +443,16 @@
         function toggleAIChat() {
             const win = document.getElementById('ai-chat-window');
             win.classList.toggle('hidden');
+            if (!currentApiKey) document.getElementById('no-key-warning').classList.remove('hidden');
         }
 
         async function openAIChat(prompt) {
             const win = document.getElementById('ai-chat-window');
             win.classList.remove('hidden');
+            if (!currentApiKey) {
+                document.getElementById('no-key-warning').classList.remove('hidden');
+                return;
+            }
             const input = document.getElementById('ai-input');
             input.value = prompt;
             handleAISend();
@@ -390,7 +476,8 @@
             Remember: Your host in St. Lucia is Myrna Elizabeth, and Denise is the local concierge.`;
 
             const response = await callGemini(text, systemPrompt);
-            document.getElementById(loadingId).remove();
+            const loadEl = document.getElementById(loadingId);
+            if (loadEl) loadEl.remove();
             msgContainer.innerHTML += `<div class="bg-slate-100 p-3 rounded-lg text-slate-700 mr-8 border border-slate-200">${response}</div>`;
             msgContainer.scrollTop = msgContainer.scrollHeight;
         }
@@ -406,6 +493,11 @@
         }
 
         async function generatePostcard() {
+            if (!currentApiKey) {
+                showToast("⚠️ Add API Key in Settings first!");
+                toggleSettings();
+                return;
+            }
             const container = document.getElementById('postcard-container');
             const imgSlot = document.getElementById('postcard-img');
             const btn = document.getElementById('postcard-btn');
@@ -421,18 +513,18 @@
             if (imageUrl) {
                 imgSlot.innerHTML = `<img src="${imageUrl}" class="w-full h-full object-cover animate-fade-in" alt="AI Piton Postcard">`;
             } else {
-                imgSlot.innerHTML = `<div class="p-4 text-xs text-red-500 text-center">Failed to generate image. Try again.</div>`;
+                imgSlot.innerHTML = `<div class="p-4 text-xs text-red-500 text-center">Failed to generate image. Ensure API key supports Imagen.</div>`;
             }
             btn.disabled = false;
             btn.innerText = "✨ Generate Postcard";
         }
 
         // --- Standard Logic & Init ---
-        const tripDate = new Date("2026-02-21T08:00:00").getTime();
+        const tripDateObj = new Date("2026-02-21T08:00:00").getTime();
         
         function updateCountdown() {
             const now = new Date().getTime();
-            const dist = tripDate - now;
+            const dist = tripDateObj - now;
             if (dist < 0) return document.getElementById("countdown").innerHTML = "TRIP STARTED!";
             const d = Math.floor(dist / (1000 * 60 * 60 * 24));
             const h = Math.floor((dist % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
@@ -475,6 +567,12 @@
             renderCharts();
             renderPacking();
             document.getElementById('ai-input').addEventListener('keypress', e => { if (e.key === 'Enter') handleAISend(); });
+            
+            if (!currentApiKey) {
+                setTimeout(() => {
+                    document.getElementById('no-key-warning').classList.remove('hidden');
+                }, 1000);
+            }
         });
     </script>
 </body>
