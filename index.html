@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Caribbean Adventure 2026</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+        
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
+
+        /* AI Chat Bubble Styles */
+        #ai-chat-window {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .loading-shimmer {
+            background: linear-gradient(90deg, #f3f4f6 0%, #e5e7eb 50%, #f3f4f6 100%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+        }
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+    </style>
+</head>
+<body class="text-slate-800 pb-20">
+
+    <!-- Navigation -->
+    <nav class="sticky top-0 z-50 bg-emerald-900 text-white shadow-lg">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="flex justify-between items-center h-16">
+                <span class="font-bold text-lg tracking-wider">🏝️ CARIBBEAN '26</span>
+                <div class="hidden md:flex space-x-6 text-sm font-medium">
+                    <button onclick="scrollToSection('overview')" class="hover:text-sky-300 transition">Overview</button>
+                    <button onclick="scrollToSection('dominica')" class="hover:text-sky-300 transition">Dominica</button>
+                    <button onclick="scrollToSection('st-lucia')" class="hover:text-sky-300 transition">St. Lucia</button>
+                    <button onclick="scrollToSection('logistics')" class="hover:text-sky-300 transition">Logistics</button>
+                </div>
+                <button class="md:hidden text-white" onclick="document.getElementById('mobile-menu').classList.toggle('hidden')">☰</button>
+            </div>
+            <div id="mobile-menu" class="hidden md:hidden pb-4 bg-emerald-800">
+                <button onclick="scrollToSection('overview')" class="block py-2 px-4 hover:bg-emerald-700 w-full text-left">Overview</button>
+                <button onclick="scrollToSection('dominica')" class="block py-2 px-4 hover:bg-emerald-700 w-full text-left">Dominica</button>
+                <button onclick="scrollToSection('st-lucia')" class="block py-2 px-4 hover:bg-emerald-700 w-full text-left">St. Lucia</button>
+                <button onclick="scrollToSection('logistics')" class="block py-2 px-4 hover:bg-emerald-700 w-full text-left">Logistics</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header id="overview" class="bg-gradient-to-br from-emerald-800 to-teal-600 text-white py-12 px-4 text-center relative overflow-hidden">
+        <div class="max-w-4xl mx-auto animate-fade-in relative z-10">
+            <h1 class="text-4xl md:text-6xl font-bold mb-4">Dominica & St. Lucia</h1>
+            <p class="text-xl md:text-2xl text-emerald-100 mb-8">February 21 – March 2, 2026</p>
+            
+            <div class="bg-white/10 backdrop-blur-md rounded-xl p-6 inline-block border border-white/20">
+                <p class="text-sm uppercase tracking-widest mb-2 opacity-80">Adventure Begins In</p>
+                <div class="flex justify-center gap-4 md:gap-8 font-mono text-2xl md:text-4xl font-bold" id="countdown">
+                    <span class="animate-pulse">Loading...</span>
+                </div>
+            </div>
+
+            <div class="mt-8">
+                <button onclick="openAIChat('Tell me a quick summary of my trip highlights!')" class="bg-white text-emerald-800 px-6 py-3 rounded-full font-bold shadow-lg hover:bg-emerald-50 transition flex items-center gap-2 mx-auto">
+                    ✨ Summarize Trip
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-4 py-8 space-y-12">
+
+        <!-- Timeline Overview -->
+        <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8">
+            <h2 class="text-2xl font-bold text-slate-800 mb-6 flex items-center">
+                <span class="bg-sky-100 text-sky-600 p-2 rounded-lg mr-3">🗺️</span> Trip Overview
+            </h2>
+            <div class="relative">
+                <div class="absolute left-4 top-0 bottom-0 w-0.5 bg-slate-200"></div>
+                <div class="space-y-8 relative">
+                    <div class="flex items-start ml-4" onclick="scrollToSection('logistics')">
+                        <div class="absolute -left-2 bg-sky-500 w-4 h-4 rounded-full border-4 border-white"></div>
+                        <div class="pl-6">
+                            <span class="text-xs font-bold text-sky-600 uppercase">Feb 21</span>
+                            <h3 class="text-lg font-bold text-slate-800">Tampa to Dominica</h3>
+                        </div>
+                    </div>
+                    <div class="flex items-start ml-4" onclick="scrollToSection('dominica')">
+                        <div class="absolute -left-2 bg-emerald-600 w-4 h-4 rounded-full border-4 border-white"></div>
+                        <div class="pl-6">
+                            <span class="text-xs font-bold text-emerald-600 uppercase">Feb 21 - 26</span>
+                            <h3 class="text-lg font-bold text-slate-800">Jungle Bay Dominica</h3>
+                        </div>
+                    </div>
+                    <div class="flex items-start ml-4" onclick="scrollToSection('crossing')">
+                        <div class="absolute -left-2 bg-orange-500 w-4 h-4 rounded-full border-4 border-white"></div>
+                        <div class="pl-6">
+                            <span class="text-xs font-bold text-orange-600 uppercase">Feb 26</span>
+                            <h3 class="text-lg font-bold text-slate-800">The Crossing</h3>
+                        </div>
+                    </div>
+                    <div class="flex items-start ml-4" onclick="scrollToSection('st-lucia')">
+                        <div class="absolute -left-2 bg-indigo-600 w-4 h-4 rounded-full border-4 border-white"></div>
+                        <div class="pl-6">
+                            <span class="text-xs font-bold text-indigo-600 uppercase">Feb 26 - Mar 2</span>
+                            <h3 class="text-lg font-bold text-slate-800">St. Lucia Family Time</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Dominica Section -->
+        <section id="dominica" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-3">
+                <div class="bg-emerald-50 border-l-4 border-emerald-600 p-6 rounded-r-lg flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <h2 class="text-2xl font-bold text-emerald-900">🇩🇲 Dominica Leg</h2>
+                        <p class="text-emerald-800 mt-1">Adventure, Volcanics, and Deep Dives.</p>
+                    </div>
+                    <button onclick="openAIChat('Give me a fun 30-second hype speech about the Boiling Lake hike in Dominica!')" class="bg-emerald-600 text-white px-4 py-2 rounded-lg font-bold shadow hover:bg-emerald-700 transition">
+                        ✨ Vibe Check
+                    </button>
+                </div>
+            </div>
+
+            <div class="space-y-6">
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                    <h3 class="font-bold text-lg mb-4 text-emerald-800">🏨 Jungle Bay Dominica</h3>
+                    <div class="space-y-3 text-sm">
+                        <p><span class="font-semibold">Rooms:</span> 2x Garden View Villas</p>
+                        <p><span class="font-semibold">Contact:</span> Chidimma Francis</p>
+                        <a href="https://wa.me/17672350025" class="text-emerald-600 hover:underline block mt-1">📱 +1 (767) 235-0025</a>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                    <h3 class="font-bold text-lg mb-2 text-slate-800">💰 Budget Progress</h3>
+                    <div class="chart-container h-48">
+                        <canvas id="jungleBayCostChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-2 space-y-6">
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                    <h3 class="font-bold text-lg text-slate-800 mb-4">⚡ Adventure Intensity</h3>
+                    <div class="chart-container h-48">
+                        <canvas id="dominicaActivityChart"></canvas>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="bg-slate-50 px-6 py-4 border-b border-slate-200">
+                        <h3 class="font-bold text-slate-800">The Plan</h3>
+                    </div>
+                    <div class="divide-y divide-slate-100 text-sm">
+                        <div class="p-4"><strong>Feb 22 (Sun):</strong> Scuba diving with Captain Donny.</div>
+                        <div class="p-4 bg-orange-50/50"><strong>Feb 23 (Mon):</strong> 🌋 Boiling Lake Hike (6-8 hours).</div>
+                        <div class="p-4"><strong>Feb 24-25:</strong> Champagne Reef Snorkeling & Spa.</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- St. Lucia Section -->
+        <section id="st-lucia" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-3">
+                <div class="bg-sky-50 border-l-4 border-sky-600 p-6 rounded-r-lg flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <h2 class="text-2xl font-bold text-sky-900">🇱🇨 St. Lucia Leg</h2>
+                        <p class="text-sky-800 mt-1">Family, Pitons, and Private Plunge Pools.</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button id="postcard-btn" onclick="generatePostcard()" class="bg-sky-600 text-white px-4 py-2 rounded-lg font-bold shadow hover:bg-sky-700 transition">
+                            ✨ Generate Postcard
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-6">
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                    <h3 class="font-bold text-lg mb-2 text-sky-800">🏠 Piton Villas Airbnb</h3>
+                    <p class="text-xs text-sky-600 font-bold mb-4 flex items-center gap-1">
+                        Hosted by <span class="bg-sky-100 px-2 py-0.5 rounded">Myrna Elizabeth</span>
+                    </p>
+                    <div class="space-y-3 text-sm">
+                        <div class="bg-slate-50 p-3 rounded border border-slate-100">
+                            <p class="font-bold text-slate-700 text-xs uppercase mb-1">Local Concierge:</p>
+                            <p class="font-bold text-lg text-slate-900">Denise</p>
+                            <a href="tel:17584866440" class="text-sky-600 font-bold hover:underline block mt-1">📞 +1 (758) 486-6440</a>
+                        </div>
+                        <button onclick="openAIChat('Help me write a professional but friendly WhatsApp message to Myrna Elizabeth and Denise. Tell them Jordan and Chris are arriving on the ferry at 9:15 PM and we have a driver, but we wanted to check if there are any specific entry instructions for the villa.')" class="mt-4 text-xs bg-sky-100 text-sky-800 p-2 rounded border border-sky-200 w-full font-medium">
+                            ✨ Draft WhatsApp to Myrna & Denise
+                        </button>
+                    </div>
+                </div>
+                <!-- Postcard Slot -->
+                <div id="postcard-container" class="hidden bg-white rounded-xl shadow-sm border border-slate-200 p-4 animate-fade-in">
+                    <h3 class="text-xs font-bold text-slate-400 mb-2 uppercase">Trip Postcard</h3>
+                    <div id="postcard-img" class="rounded-lg bg-slate-100 flex items-center justify-center overflow-hidden aspect-video relative">
+                        <!-- Image here -->
+                    </div>
+                    <p class="text-[10px] text-slate-400 mt-2 text-center italic">Generated by Imagen 4.0</p>
+                </div>
+            </div>
+
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="bg-slate-50 px-6 py-4 border-b border-slate-200 flex justify-between items-center">
+                        <h3 class="font-bold text-slate-800">Highlights</h3>
+                        <button onclick="openAIChat('What are some good local restaurants in Soufriere near Myrna Elizabeth\'s Jalousie property for a family dinner with parents?')" class="text-xs text-sky-600 font-bold">✨ Local Food Recommendations</button>
+                    </div>
+                    <div class="divide-y divide-slate-100 text-sm">
+                        <div class="p-4"><strong>Feb 27 (Fri):</strong> Private Morning Boat Snorkeling.</div>
+                        <div class="p-4"><strong>Sat-Sun:</strong> Family Relaxation & Sulphur Springs Mud Baths.</div>
+                        <div class="p-4"><strong>Mar 2 (Mon):</strong> Return to TPA via Miami.</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Logistics -->
+        <section id="logistics" class="bg-slate-800 text-white rounded-2xl p-6 md:p-8">
+            <h2 class="text-2xl font-bold mb-6 flex justify-between items-center">
+                <span>🎒 Logistics Hub</span>
+                <button onclick="generateAIPackingList()" class="text-xs bg-emerald-600 text-white px-3 py-1.5 rounded-full font-bold">✨ AI Smart Suggest</button>
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="bg-slate-700 rounded-xl p-6">
+                    <h3 class="font-bold text-emerald-400 mb-4">✈️ Flights</h3>
+                    <div class="space-y-4 text-xs font-mono">
+                        <div class="border-b border-slate-600 pb-2">
+                            <p class="text-slate-400">Feb 21: TPA ➝ MIA ➝ DOM</p>
+                            <p class="text-emerald-300">AA 3192 / AA 3448</p>
+                        </div>
+                        <div>
+                            <p class="text-slate-400">Mar 2: UVF ➝ MIA ➝ TPA</p>
+                            <p class="text-emerald-300">AA 2742 / AA 1921</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-slate-700 rounded-xl p-6">
+                    <h3 class="font-bold text-orange-400 mb-4">🔌 Travel Info</h3>
+                    <p class="text-sm">Type G Plugs Required. US Dollars accepted.</p>
+                </div>
+                <div class="bg-slate-700 rounded-xl p-6">
+                    <h3 class="font-bold text-sky-400 mb-4">✅ Packing List</h3>
+                    <div class="space-y-2 text-sm" id="packing-list"></div>
+                    <div id="ai-packing-suggestions" class="mt-4 pt-4 border-t border-slate-600 text-xs text-slate-300 italic hidden"></div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Floating AI Chat Assistant -->
+    <div id="ai-chat-bubble" onclick="toggleAIChat()" class="fixed bottom-6 right-6 w-14 h-14 bg-emerald-600 text-white rounded-full shadow-2xl flex items-center justify-center cursor-pointer hover:scale-110 transition z-50">
+        <span class="text-2xl">✨</span>
+    </div>
+
+    <div id="ai-chat-window" class="fixed bottom-24 right-6 w-80 md:w-96 max-h-[500px] bg-white rounded-2xl shadow-2xl flex flex-col hidden z-50 border border-slate-200 overflow-hidden animate-fade-in">
+        <div class="bg-emerald-700 p-4 text-white flex justify-between items-center">
+            <h4 class="font-bold flex items-center gap-2">✨ Adventure Guide</h4>
+            <button onclick="toggleAIChat()" class="text-xl">×</button>
+        </div>
+        <div id="ai-messages" class="flex-1 p-4 overflow-y-auto space-y-4 text-sm max-h-[350px]">
+            <div class="bg-slate-100 p-3 rounded-lg text-slate-700">Hi Jordan & Chris! I'm your AI guide for the Caribbean. Ask me anything about your upcoming adventure!</div>
+        </div>
+        <div class="p-4 border-t border-slate-100">
+            <div class="flex gap-2">
+                <input id="ai-input" type="text" placeholder="Ask about the trip..." class="flex-1 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-emerald-600">
+                <button onclick="handleAISend()" class="bg-emerald-600 text-white px-3 py-2 rounded-lg text-sm font-bold">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const apiKey = ""; // Provided by env
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+
+        // --- Core Data ---
+        const tripDetails = {
+            travelers: "Jordan, Chris, Jason, Benjamin, Parents",
+            dates: "Feb 21 - March 2, 2026",
+            itinerary: [
+                { date: "Feb 21", loc: "Dominica Arrival", hotel: "Jungle Bay" },
+                { date: "Feb 22", activity: "Scuba with Capt Donny" },
+                { date: "Feb 23", activity: "Boiling Lake Hike (Extreme Difficulty)" },
+                { date: "Feb 26", crossing: "Ferry to St. Lucia, late arrival 9:15pm" },
+                { date: "Feb 27", activity: "Private Boat Tour St. Lucia" },
+                { date: "Mar 2", loc: "Departure to TPA" }
+            ],
+            contacts: {
+                dominica: "Chidimma @ Jungle Bay (+1 767 235 0025)",
+                stLucia: "Myrna Elizabeth (Host) and Denise (Concierge: +1 758 486 6440)"
+            }
+        };
+
+        // --- AI API Utility ---
+        async function callGemini(prompt, systemInstruction = "") {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            const payload = {
+                contents: [{ parts: [{ text: prompt }] }],
+                systemInstruction: { parts: [{ text: systemInstruction }] }
+            };
+
+            let delay = 1000;
+            for (let i = 0; i < 5; i++) {
+                try {
+                    const response = await fetch(url, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'application/json' } });
+                    const result = await response.json();
+                    if (response.ok) return result.candidates?.[0]?.content?.parts?.[0]?.text;
+                } catch (e) {}
+                await new Promise(r => setTimeout(r, delay));
+                delay *= 2;
+            }
+            return "Sorry, I'm having trouble connecting right now. 🌴";
+        }
+
+        async function callImagen(prompt) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${apiKey}`;
+            const payload = { instances: { prompt: prompt }, parameters: { sampleCount: 1 } };
+            try {
+                const response = await fetch(url, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'application/json' } });
+                const result = await response.json();
+                return `data:image/png;base64,${result.predictions[0].bytesBase64Encoded}`;
+            } catch (e) { return null; }
+        }
+
+        // --- AI Features ---
+        function toggleAIChat() {
+            const win = document.getElementById('ai-chat-window');
+            win.classList.toggle('hidden');
+        }
+
+        async function openAIChat(prompt) {
+            const win = document.getElementById('ai-chat-window');
+            win.classList.remove('hidden');
+            const input = document.getElementById('ai-input');
+            input.value = prompt;
+            handleAISend();
+        }
+
+        async function handleAISend() {
+            const input = document.getElementById('ai-input');
+            const msgContainer = document.getElementById('ai-messages');
+            const text = input.value.trim();
+            if (!text) return;
+
+            input.value = "";
+            msgContainer.innerHTML += `<div class="bg-emerald-50 p-3 rounded-lg text-emerald-900 ml-8 text-right font-medium">${text}</div>`;
+            const loadingId = "loading-" + Date.now();
+            msgContainer.innerHTML += `<div id="${loadingId}" class="bg-slate-100 p-3 rounded-lg text-slate-700 mr-8 animate-pulse italic">Thinking...</div>`;
+            msgContainer.scrollTop = msgContainer.scrollHeight;
+
+            const systemPrompt = `You are a helpful travel assistant for Jordan and Chris's Caribbean trip in 2026. 
+            Details: ${JSON.stringify(tripDetails)}. 
+            Be cheerful, helpful, and concise. Provide specific advice grounded in the provided itinerary. 
+            Remember: Your host in St. Lucia is Myrna Elizabeth, and Denise is the local concierge.`;
+
+            const response = await callGemini(text, systemPrompt);
+            document.getElementById(loadingId).remove();
+            msgContainer.innerHTML += `<div class="bg-slate-100 p-3 rounded-lg text-slate-700 mr-8 border border-slate-200">${response}</div>`;
+            msgContainer.scrollTop = msgContainer.scrollHeight;
+        }
+
+        async function generateAIPackingList() {
+            const suggestContainer = document.getElementById('ai-packing-suggestions');
+            suggestContainer.innerHTML = "✨ Gemini is thinking about your adventure...";
+            suggestContainer.classList.remove('hidden');
+
+            const prompt = `Based on a trip to Dominica and St. Lucia including an extreme Boiling Lake hike, scuba diving, and a private boat tour, what are 5 very specific, non-obvious items Jordan and Chris should pack? Respond in 5 short bullet points.`;
+            const result = await callGemini(prompt, "You are an expert travel consultant.");
+            suggestContainer.innerHTML = `<p class="font-bold text-sky-400 mb-1">✨ AI Recommendations:</p>${result.replace(/\n/g, '<br>')}`;
+        }
+
+        async function generatePostcard() {
+            const container = document.getElementById('postcard-container');
+            const imgSlot = document.getElementById('postcard-img');
+            const btn = document.getElementById('postcard-btn');
+            
+            container.classList.remove('hidden');
+            btn.disabled = true;
+            btn.innerText = "✨ Painting...";
+            imgSlot.innerHTML = `<div class="loading-shimmer w-full h-full flex items-center justify-center"><span class="text-xs text-slate-400 font-mono animate-pulse">GENERATING VIEW...</span></div>`;
+
+            const prompt = "A high-resolution, travel-style postcard of the Petit Piton in St. Lucia, viewed from a lush tropical terrace at sunset. Vibrant colors, crystal clear Caribbean water, tropical flowers in the foreground. Professional photography style.";
+            const imageUrl = await callImagen(prompt);
+
+            if (imageUrl) {
+                imgSlot.innerHTML = `<img src="${imageUrl}" class="w-full h-full object-cover animate-fade-in" alt="AI Piton Postcard">`;
+            } else {
+                imgSlot.innerHTML = `<div class="p-4 text-xs text-red-500 text-center">Failed to generate image. Try again.</div>`;
+            }
+            btn.disabled = false;
+            btn.innerText = "✨ Generate Postcard";
+        }
+
+        // --- Standard Logic & Init ---
+        const tripDate = new Date("2026-02-21T08:00:00").getTime();
+        
+        function updateCountdown() {
+            const now = new Date().getTime();
+            const dist = tripDate - now;
+            if (dist < 0) return document.getElementById("countdown").innerHTML = "TRIP STARTED!";
+            const d = Math.floor(dist / (1000 * 60 * 60 * 24));
+            const h = Math.floor((dist % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            document.getElementById("countdown").innerHTML = `
+                <span class="flex flex-col"><span>${d}</span><span class="text-xs opacity-60">DAYS</span></span>
+                <span>:</span>
+                <span class="flex flex-col"><span>${h}</span><span class="text-xs opacity-60">HOURS</span></span>`;
+        }
+
+        function renderCharts() {
+            new Chart(document.getElementById('jungleBayCostChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Paid', 'Balance'],
+                    datasets: [{ data: [544.50, 1270.50], backgroundColor: ['#10b981', '#f97316'], borderWidth: 0 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+            });
+
+            new Chart(document.getElementById('dominicaActivityChart'), {
+                type: 'bar',
+                data: {
+                    labels: ['Arrival', 'Diving', 'BOILING LAKE', 'Snorkel', 'Chill'],
+                    datasets: [{ label: 'Intensity', data: [30, 60, 100, 40, 20], backgroundColor: ['#94a3b8', '#38bdf8', '#ef4444', '#10b981', '#10b981'] }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { display: false } }, plugins: { legend: { display: false } } }
+            });
+        }
+
+        function renderPacking() {
+            const list = ["Type G Adapters", "Hiking Boots", "Reef Sunscreen", "Dry Bag", "Passports"];
+            document.getElementById('packing-list').innerHTML = list.map(i => `<div class="flex items-center gap-2"><input type="checkbox"><span>${i}</span></div>`).join('');
+        }
+
+        window.scrollToSection = id => document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            updateCountdown();
+            setInterval(updateCountdown, 60000);
+            renderCharts();
+            renderPacking();
+            document.getElementById('ai-input').addEventListener('keypress', e => { if (e.key === 'Enter') handleAISend(); });
+        });
+    </script>
+</body>
+</html>
